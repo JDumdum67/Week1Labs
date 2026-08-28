@@ -23,3 +23,5 @@ const task = { title: 'Finish Lab 1', done: false };
 
 const { title, done } = task;
 console.log(`Task: ${title} — Done: ${done}`);
+
+TaskCard.js
