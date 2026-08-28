@@ -1,5 +1,5 @@
 import { StyleSheet, View, Text } from 'react-native';
-import TaskCard from './components/TaskCard';
+import TaskCard from './src/app/components/TaskCard';
 export default function App() {
 
 return (
