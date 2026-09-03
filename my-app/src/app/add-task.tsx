@@ -1,29 +1,79 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, FlatList } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, FlatList, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import TaskCard from './components/TaskCard';
 
+type Task = {
+  id: string;
+  title: string;
+  done: boolean;
+};
+
 export default function AddTaskScreen() {
-  const [taskText, setTaskText] = useState('');
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [taskText, setTaskText] = useState<string>('');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
+  // 1. Load tasks on mount
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        let savedData: string | null = null;
+        if (Platform.OS === 'web') {
+          savedData = localStorage.getItem('tasks');
+        } else {
+          savedData = await AsyncStorage.getItem('tasks');
+        }
+
+        if (savedData !== null) {
+          setTasks(JSON.parse(savedData));
+        }
+      } catch (error) {
+        console.error('Failed to load tasks:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    loadTasks();
+  }, []);
+
+  // 2. Save tasks on change
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    const saveTasks = async () => {
+      try {
+        const jsonValue = JSON.stringify(tasks);
+        if (Platform.OS === 'web') {
+          localStorage.setItem('tasks', jsonValue);
+        } else {
+          await AsyncStorage.setItem('tasks', jsonValue);
+        }
+      } catch (error) {
+        console.error('Failed to save tasks:', error);
+      }
+    };
+
+    saveTasks();
+  }, [tasks, isLoaded]);
 
   function handleAddTask() {
     if (taskText.trim() === '') {
-      setErrorMessage('Please type a task before adding it!');
+      setErrorMessage('Please type a task before adding it.');
       return;
     }
 
-    const newTask = { id: Date.now().toString(), title: taskText, done: false };
-    setTasks([...tasks, newTask]);
+    const newTask: Task = { id: Date.now().toString(), title: taskText, done: false };
+    setTasks((prevTasks) => [...prevTasks, newTask]);
     setTaskText('');
     setErrorMessage('');
   }
 
-  function handleToggleTask(id: any) {
-    setTasks(
-      tasks.map((task: any) =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
+  function handleToggleTask(id: string) {
+    setTasks((prevTasks) =>
+      prevTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
     );
   }
 
@@ -45,11 +95,10 @@ export default function AddTaskScreen() {
         <Text style={styles.error}>{errorMessage}</Text>
       )}
 
-      <Button title="ADD TASK" onPress={handleAddTask} />
+      <Button title="Add Task" onPress={handleAddTask} />
 
       <Text style={styles.counter}>You have {tasks.length} task(s)</Text>
 
-      {/* STEP 5: Celebration Block */}
       {tasks.length > 0 && tasks.every((t) => t.done) && (
         <Text style={styles.celebration}>🎉 All done! Great work!</Text>
       )}
@@ -77,7 +126,8 @@ export default function AddTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 60,
+    paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
   },
   heading: {
@@ -87,10 +137,10 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#D8DEE9',
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    padding: 10,
+    marginBottom: 10,
   },
   error: {
     color: '#B23A48',
@@ -100,7 +150,6 @@ const styles = StyleSheet.create({
   counter: {
     marginVertical: 10,
   },
-  // STEP 5: Matching Style
   celebration: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -117,6 +166,6 @@ const styles = StyleSheet.create({
     height: 8,
   },
   list: {
-    marginTop: 10,
+    marginTop: 16,
   },
 });
