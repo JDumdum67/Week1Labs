@@ -5,12 +5,17 @@ import TaskCard from '../src/app/components/TaskCard';
 export default function AddTaskScreen() {
   const [taskText, setTaskText] = useState('');
   const [tasks, setTasks] = useState([]);
-
+const [errorMessage, setErrorMessage] = useState('');
   function handleAddTask() {
-    if (taskText.trim() === '') return;
+    if (taskText.trim() === '') {
+      setErrorMessage('Please type a task before adding it.');
+      return;
+    }
+    setErrorMessage('');
     const newTask = { id: Date.now().toString(), title: taskText, done: false };
     setTasks([...tasks, newTask]);
     setTaskText('');
+    setErrorMessage('');
   }
 
   function handleToggleTask(id) {
@@ -33,6 +38,9 @@ export default function AddTaskScreen() {
         value={taskText}
         onChangeText={setTaskText}
       />
+      {errorMessage !== '' && (
+  <Text style={styles.error}>{errorMessage}</Text>
+)}
       <Button title="Add Task" onPress={handleAddTask} />
       <Text>You have {tasks.length} task(s)</Text>
       <FlatList
@@ -50,9 +58,8 @@ export default function AddTaskScreen() {
   }
   ItemSeparatorComponent={() => <View style={styles.separator} />}
   style={styles.list}
-
-  
 />
+
     </View>
   );
 }
