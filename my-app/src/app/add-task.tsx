@@ -19,7 +19,7 @@ export default function AddTaskScreen() {
   const [quote, setQuote] = useState<string>('');
   const [loadingQuote, setLoadingQuote] = useState<boolean>(true);
 
-  // REUSABLE FETCH FUNCTION FOR STEP 5
+  // FETCH QUOTE LOGIC
   const fetchQuote = () => {
     setLoadingQuote(true);
     fetch('https://dummyjson.com/quotes/random')
@@ -39,12 +39,11 @@ export default function AddTaskScreen() {
       });
   };
 
-  // FETCH ON STARTUP
   useEffect(() => {
     fetchQuote();
   }, []);
 
-  // LOAD TASKS ON MOUNT
+  // LOAD TASKS
   useEffect(() => {
     const loadTasks = async () => {
       try {
@@ -68,7 +67,7 @@ export default function AddTaskScreen() {
     loadTasks();
   }, []);
 
-  // SAVE TASKS ON CHANGE
+  // SAVE TASKS
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -106,6 +105,11 @@ export default function AddTaskScreen() {
     );
   }
 
+  // STEP 4: DELETE FUNCTION
+  function handleDeleteTask(id: any) {
+    setTasks(tasks.filter((t) => t.id !== id));
+  }
+
   return (
     <View style={styles.container}>
       {/* MOTIVATIONAL QUOTE SECTION */}
@@ -117,7 +121,6 @@ export default function AddTaskScreen() {
         )}
       </View>
 
-      {/* STEP 5: REFRESH BUTTON DIRECTLY BELOW THE QUOTE */}
       <View style={styles.buttonWrapper}>
         <Button title="New Quote" onPress={fetchQuote} />
       </View>
@@ -146,6 +149,7 @@ export default function AddTaskScreen() {
         <Text style={styles.celebration}>🎉 All done! Great work!</Text>
       )}
 
+      {/* STEP 5: FLATLIST WITH ONDELETE WIRED IN */}
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id}
@@ -154,6 +158,7 @@ export default function AddTaskScreen() {
             title={item.title}
             done={item.done}
             onToggle={() => handleToggleTask(item.id)}
+            onDelete={() => handleDeleteTask(item.id)}
           />
         )}
         ListEmptyComponent={
