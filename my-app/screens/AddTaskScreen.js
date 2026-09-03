@@ -8,6 +8,7 @@ export default function AddTaskScreen() {
   const [tasks, setTasks] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [quote, setQuote] = useState("Loading today's motivation...");
 
   // STEP 2: Load tasks on initial mount
   useEffect(() => {
@@ -49,7 +50,15 @@ export default function AddTaskScreen() {
         console.error('Failed to save tasks:', error);
       }
     };
+useEffect(() => {
 
+fetch('https://api.quotable.io/random')
+.then((response) => response.json())
+.then((data) => setQuote(data.content))
+
+.catch(() => setQuote('Believe in yourself and get it done!'));
+
+}, []);
     saveTasks();
   }, [tasks, isLoaded]); // Dependency array tracking state changes
 
@@ -73,6 +82,7 @@ export default function AddTaskScreen() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.quote}>💬 {quote}</Text>
       <Text style={styles.heading}>Add a Task</Text>
 
       <TextInput
@@ -162,4 +172,10 @@ const styles = StyleSheet.create({
   list: {
     marginTop: 16,
   },
+  quote: { 
+    fontStyle: 'italic', 
+    color: '#6B7280', 
+    marginBottom: 16, 
+    textAlign: 'center'
+},
 });

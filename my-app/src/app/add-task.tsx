@@ -15,7 +15,36 @@ export default function AddTaskScreen() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // 1. Load tasks on mount
+  // QUOTE STATES
+  const [quote, setQuote] = useState<string>('');
+  const [loadingQuote, setLoadingQuote] = useState<boolean>(true);
+
+  // REUSABLE FETCH FUNCTION FOR STEP 5
+  const fetchQuote = () => {
+    setLoadingQuote(true);
+    fetch('https://dummyjson.com/quotes/random')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch quote');
+        return res.json();
+      })
+      .then((data) => {
+        setQuote(`"${data.quote}" — ${data.author}`);
+      })
+      .catch((error) => {
+        console.log('Using backup quote:', error);
+        setQuote('"Keep pushing forward no matter what!" — Backup Motivation');
+      })
+      .finally(() => {
+        setLoadingQuote(false);
+      });
+  };
+
+  // FETCH ON STARTUP
+  useEffect(() => {
+    fetchQuote();
+  }, []);
+
+  // LOAD TASKS ON MOUNT
   useEffect(() => {
     const loadTasks = async () => {
       try {
@@ -39,7 +68,7 @@ export default function AddTaskScreen() {
     loadTasks();
   }, []);
 
-  // 2. Save tasks on change
+  // SAVE TASKS ON CHANGE
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -79,6 +108,20 @@ export default function AddTaskScreen() {
 
   return (
     <View style={styles.container}>
+      {/* MOTIVATIONAL QUOTE SECTION */}
+      <View style={styles.quoteCard}>
+        {loadingQuote ? (
+          <Text style={styles.quoteLoading}>Loading today's motivation...</Text>
+        ) : (
+          <Text style={styles.quoteText}>{quote}</Text>
+        )}
+      </View>
+
+      {/* STEP 5: REFRESH BUTTON DIRECTLY BELOW THE QUOTE */}
+      <View style={styles.buttonWrapper}>
+        <Button title="New Quote" onPress={fetchQuote} />
+      </View>
+
       <Text style={styles.heading}>Add a Task</Text>
 
       <TextInput
@@ -126,9 +169,31 @@ export default function AddTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 50,
     paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
+  },
+  quoteCard: {
+    padding: 14,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2563EB',
+  },
+  buttonWrapper: {
+    marginBottom: 16,
+    alignSelf: 'flex-start',
+  },
+  quoteLoading: {
+    fontStyle: 'italic',
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  quoteText: {
+    fontSize: 14,
+    color: '#1F2937',
+    fontWeight: '500',
   },
   heading: {
     fontSize: 24,
