@@ -13,6 +13,17 @@ export default function AddTaskScreen() {
     setTaskText('');
   }
 
+  function handleToggleTask(id) {
+
+  setTasks(
+  tasks.map((t) =>
+
+  t.id === id ? { ...t, done: !t.done } : t
+
+)
+);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Add a Task</Text>
@@ -25,11 +36,23 @@ export default function AddTaskScreen() {
       <Button title="Add Task" onPress={handleAddTask} />
       <Text>You have {tasks.length} task(s)</Text>
       <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TaskCard title={item.title} done={item.done} />}
-        style={styles.list}
-      />
+  data={tasks}
+  keyExtractor={(item) => item.id}
+  renderItem={({ item }) => (
+    <TaskCard
+      title={item.title}
+      done={item.done}
+      onToggle={() => handleToggleTask(item.id)}
+    />
+  )}
+  ListEmptyComponent={
+    <Text style={styles.empty}>No tasks yet — add one above! 👆</Text>
+  }
+  ItemSeparatorComponent={() => <View style={styles.separator} />}
+  style={styles.list}
+
+  
+/>
     </View>
   );
 }
